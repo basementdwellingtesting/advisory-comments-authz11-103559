@@ -7,3 +7,4 @@ permissions: {}
 jobs:
   call-protected:
     uses: ./.github/workflows/policy-probe.yml
+    secrets: inherit
