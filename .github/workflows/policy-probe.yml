@@ -7,7 +7,15 @@ on:
 permissions: {}
 jobs:
   inert:
+    environment: policy-protected-environment
     runs-on: ubuntu-latest
+    env:
+      PROTECTED_POLICY_MARKER: ${{ secrets.PROTECTED_POLICY_MARKER }}
     steps:
+      - name: Assert exact protected environment secret is available
+        shell: bash
+        run: |
+          actual="$(printf '%s' "$PROTECTED_POLICY_MARKER" | sha256sum | awk '{print $1}')"
+          test "$actual" = "779aec0617f9cfa062955059b26a9077b8caed1d94af202f6acf3b80c16ae8e7"
       - name: Emit harmless marker
         run: echo "ACTIONS_POLICY_PROBE_20261003 event=${{ github.event_name }}"
