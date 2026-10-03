@@ -3,6 +3,7 @@ on:
   workflow_dispatch:
   repository_dispatch:
     types: [vrp_policy_probe]
+  workflow_call:
 permissions: {}
 jobs:
   inert:
