@@ -1,6 +1,8 @@
 name: VRP inert policy caller
 on:
   workflow_dispatch:
+  repository_dispatch:
+    types: [vrp_policy_call_probe]
 permissions: {}
 jobs:
   call-protected:
