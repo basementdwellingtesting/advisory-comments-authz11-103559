@@ -3,8 +3,9 @@ on:
   workflow_dispatch:
   repository_dispatch:
     types: [vrp_policy_call_probe]
-permissions: {}
+permissions:
+  contents: read
+  id-token: write
 jobs:
   call-protected:
     uses: ./.github/workflows/policy-probe.yml
-    secrets: inherit
