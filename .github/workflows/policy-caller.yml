@@ -1,0 +1,7 @@
+name: VRP inert policy caller
+on:
+  workflow_dispatch:
+permissions: {}
+jobs:
+  call-protected:
+    uses: ./.github/workflows/policy-probe.yml
