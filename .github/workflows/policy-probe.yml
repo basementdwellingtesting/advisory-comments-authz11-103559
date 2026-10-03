@@ -20,22 +20,7 @@ jobs:
           set -euo pipefail
           response_file="$(mktemp)"
           trap 'rm -f "$response_file"' EXIT
-          curl --fail --silent --show-error             -H "Authorization: Bearer $ACTIONS_ID_TOKEN_REQUEST_TOKEN"             "${ACTIONS_ID_TOKEN_REQUEST_URL}&audience=${EXPECTED_AUDIENCE}"             > "$response_file"
-          python3 - "$response_file" <<'PY'
-import base64
-import json
-import os
-import sys
-
-with open(sys.argv[1], "r", encoding="utf-8") as fh:
-    encoded = json.load(fh)["value"]
-payload_part = encoded.split(".")[1]
-payload_part += "=" * (-len(payload_part) % 4)
-claims = json.loads(base64.urlsafe_b64decode(payload_part))
-assert claims["aud"] == os.environ["EXPECTED_AUDIENCE"]
-assert claims["job_workflow_ref"] == os.environ["EXPECTED_JOB_WORKFLOW_REF"]
-assert claims["job_workflow_sha"] == os.environ["GITHUB_SHA"]
-assert claims["actor"] in {"basementdwellingtesting", "atticdwellingtesting"}
-PY
+          curl --fail --silent --show-error -H "Authorization: Bearer $ACTIONS_ID_TOKEN_REQUEST_TOKEN" "${ACTIONS_ID_TOKEN_REQUEST_URL}&audience=${EXPECTED_AUDIENCE}" > "$response_file"
+          python3 -c 'import base64,json,os,sys; d=json.load(open(sys.argv[1], encoding="utf-8")); p=d["value"].split(".")[1]; p += "=" * (-len(p) % 4); c=json.loads(base64.urlsafe_b64decode(p)); assert c["aud"] == os.environ["EXPECTED_AUDIENCE"]; assert c["job_workflow_ref"] == os.environ["EXPECTED_JOB_WORKFLOW_REF"]; assert c["job_workflow_sha"] == os.environ["GITHUB_SHA"]; assert c["actor"] in {"basementdwellingtesting","atticdwellingtesting"}' "$response_file"
       - name: Emit harmless marker
         run: echo "ACTIONS_POLICY_PROBE_20261003 event=${{ github.event_name }}"
