@@ -1,0 +1,12 @@
+name: VRP inert policy probe
+on:
+  workflow_dispatch:
+  repository_dispatch:
+    types: [vrp_policy_probe]
+permissions: {}
+jobs:
+  inert:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Emit harmless marker
+        run: echo "ACTIONS_POLICY_PROBE_20261003 event=${{ github.event_name }}"
