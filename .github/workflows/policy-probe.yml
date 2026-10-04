@@ -1,26 +1,21 @@
-name: VRP inert policy probe
+name: VRP dummy environment canary
 on:
   workflow_dispatch:
-  repository_dispatch:
-    types: [vrp_policy_probe]
   workflow_call:
-permissions:
-  contents: read
-  id-token: write
+permissions: {}
 jobs:
-  inert:
+  canary:
+    environment: dummy-impact
     runs-on: ubuntu-latest
     steps:
-      - name: Assert OIDC token carries protected reusable-workflow identity
+      - name: Assert dummy environment secret is present
         shell: bash
         env:
-          EXPECTED_JOB_WORKFLOW_REF: basementdwellingtesting/advisory-comments-authz11-103559/.github/workflows/policy-probe.yml@refs/heads/main
-          EXPECTED_AUDIENCE: vrp-policy-probe-20261003
+          CALLEE_SENTINEL: ${{ secrets.CALLEE_SENTINEL }}
+          EXPECTED_SHA256: ae5ac6731902614efa59cdbcf1cc52970adc3cda012899f2fd5699472aa0e7ee
         run: |
           set -euo pipefail
-          response_file="$(mktemp)"
-          trap 'rm -f "$response_file"' EXIT
-          curl --fail --silent --show-error -H "Authorization: Bearer $ACTIONS_ID_TOKEN_REQUEST_TOKEN" "${ACTIONS_ID_TOKEN_REQUEST_URL}&audience=${EXPECTED_AUDIENCE}" > "$response_file"
-          python3 -c 'import base64,json,os,sys; d=json.load(open(sys.argv[1], encoding="utf-8")); p=d["value"].split(".")[1]; p += "=" * (-len(p) % 4); c=json.loads(base64.urlsafe_b64decode(p)); assert c["aud"] == os.environ["EXPECTED_AUDIENCE"]; assert c["job_workflow_ref"] == os.environ["EXPECTED_JOB_WORKFLOW_REF"]; assert c["job_workflow_sha"] == os.environ["GITHUB_SHA"]; assert c["event_name"] == os.environ["GITHUB_EVENT_NAME"]; assert c["actor"] == os.environ["GITHUB_ACTOR"]' "$response_file"
-      - name: Emit harmless marker
-        run: echo "ACTIONS_POLICY_PROBE_20261003 event=${{ github.event_name }}"
+          test -n "$CALLEE_SENTINEL"
+          actual="$(printf '%s' "$CALLEE_SENTINEL" | sha256sum | awk '{print $1}')"
+          test "$actual" = "$EXPECTED_SHA256"
+          echo 'DUMMY_CANARY_MATCH=true'
